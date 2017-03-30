@@ -7,14 +7,21 @@ function xonload()
 	console.log("xonload")
 	var rr = new window.XMLHttpRequest()
 	rr.onload = function(e) {
-	  var r = this.response; // not responseText
-		/* ... */
-		var dataView = new DataView(this.response);
+	  var r = this.response; 
+
 		// The TextDecoder interface is documented at http://encoding.spec.whatwg.org/#interface-textdecoder
+		//
+		// 1) find CRLF
+		// 2) extract size
+		// 3) extract JSON block, wrap it in DataView TextDecoder and then JSON.parse
+		// 4) handle blocks
+		var dataView = new DataView(this.response); 
 		var decoder = new TextDecoder("utf-8");
 		var decodedString = decoder.decode(dataView);
 
 		console.log("response",this.status,r,decodedString)
+		
+		// TODO: decode here
 	}
 	rr.open("GET", "/jsonbin");
 	rr.responseType = "arraybuffer";

@@ -14,6 +14,18 @@ void JSONBinBuilder::serialize(struct mg_connection * nc)
     }
     else
     {
+      // TODO: write out first size
+      /*
+       * TODO Design: instead of aline with the size we could make a JSON hack to have the first part always a valid JSON
+       Original:
+         First Line: sizehex CRLF
+         Then JSON
+         Last Line: CRLF\x00
+       Hack:
+         First Line: [0xsizehex,CRLF
+         Then JSON
+         Last Line: ]CRLF\x00
+       */
       int firstlinesize = 8+2; // HEX4\xCRLF
       int sepsize = 3; // CRLF\x00
       // emit size
@@ -25,7 +37,9 @@ void JSONBinBuilder::serialize(struct mg_connection * nc)
         mg_send(nc, b.prefix.c_str(),b.prefix.size());
         if(b.isFile())
         {
-          // load file, but send up to given size! 
+          // NOTE: under Linux mongoose should expose sendfile
+
+          // load file, copy up to size, or pad
         }
         else
         {
@@ -46,7 +60,7 @@ void JSONBinBuilder::serialize(std::ostream & ons)
     }
     else
     {
-      // emit size
+      // TODO emit size before JSON
       ons << s;
       for(auto & b : blocks)
       {
@@ -71,16 +85,16 @@ int JSONBinBuilder::assignFile(Json::Value & e , std::string path, std::string m
       assignFile(e,path,mime,filename,true); // load NOW
     else
     {
-      // load and write
+        // load and write as data64
     }
   }
   else if(!deferload)
   {
-    // load in bloc
+    // load in block
   }
   else
   {
-    // mark for later
+    // TODO add block
   }
 }
 
@@ -91,26 +105,27 @@ int JSONBinBuilder::assignBinary(Json::Value & value , std::string path, std::st
 {
   if(usebase64)
   {
-      // mg_base64_encode if HAS mongoose
-      // allocate size+
+      // OPTIONAL: if mongoos is present we could use mg_base64_encode
       value = "data:" + mime +  ";base64," + base64_encode(m.get(),size);
       return 0;
   }
+  // TODO: add the external mode
   else
   {
       int headersize = 4 + 2 + path.size() + 2 + mime.size();
       currentoff += headersize;
       int r = currentoff;
-      std::ostringstream ons;
+
+      std::ostringstream ons; // this holds the prefix of everyblob
       uint32_t size32 = size;
-      ons.write((char*)&size32,4); // TODO endianess
+      ons.write((char*)&size32,4); // TODO endianess safety
 
       uint16_t size16 = path.size();
-      ons.write((char*)&size16,2); // TODO endianess
+      ons.write((char*)&size16,2); // TODO endianess safety
       ons.write(path.c_str(),path.size());
 
       size16 = mime.size();
-      ons.write((char*)&size16,2); // TODO endianess
+      ons.write((char*)&size16,2); // TODO endianess safety
       ons.write(mime.c_str(),mime.size());
 
       BinaryBlock bb;
@@ -118,7 +133,12 @@ int JSONBinBuilder::assignBinary(Json::Value & value , std::string path, std::st
       bb.size = size;
       bb.offset = currentoff;
 
+      std::ostringstream onslink;
+      onslink << "data:" << mime << ";offset=" << currentoff<<";size=" << size; // not standard but reasonable
+      value = onslink.str();
+
       currentoff += size;
+
 
       blocks.push_back(bb);
   }
