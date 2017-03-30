@@ -1,0 +1,32 @@
+<head>
+<script src="jsonbin.js" >
+</script>
+<script>
+function xonload()
+{
+	console.log("xonload")
+	var rr = new window.XMLHttpRequest()
+	rr.onload = function(e) {
+	  var r = this.response; // not responseText
+		/* ... */
+		var dataView = new DataView(this.response);
+		// The TextDecoder interface is documented at http://encoding.spec.whatwg.org/#interface-textdecoder
+		var decoder = new TextDecoder("utf-8");
+		var decodedString = decoder.decode(dataView);
+
+		console.log("response",this.status,r,decodedString)
+	}
+	rr.open("GET", "/jsonbin");
+	rr.responseType = "arraybuffer";
+	rr.send();
+}
+console.log("setup")
+window.addEventListener("load",xonload,false)
+</script>
+</head>
+<body>
+<p>
+Ciao
+</p>
+
+</body>
