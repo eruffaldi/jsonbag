@@ -4,10 +4,12 @@
 #include <string>
 #include <iostream>
 
+struct mg_connection;
+
 class JSONBinBuilder
 {
 public:
-	struct BinaryBlocks
+	struct BinaryBlock
 	{
 		int size;
 		int offset;	// offset of payload
@@ -16,7 +18,7 @@ public:
 		std::string filename;
 
 		bool isFile() const { return filename.size(); }
-		int effectiveSize() const { return size+prefis.size(); }
+		int effectiveSize() const { return size+prefix.size(); }
 	};
 
 	void setInlineMode(bool b) { usebase64 = b; } 
@@ -39,7 +41,7 @@ public:
 private:
 	int size() const { return currentoff; }
 	int currentoff = 0;
-	std::vector<BinaryBlocks> blocks;
+	std::vector<BinaryBlock> blocks;
 	bool usebase64 = false;
 };
 

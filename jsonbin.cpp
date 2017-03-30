@@ -1,11 +1,12 @@
 #include "jsonbin.hpp"
 #include "base64.h"
-#include <stringstream>
+#include <sstream>
+#include "mongoose.h"
 
 void JSONBinBuilder::serialize(struct mg_connection * nc)
 {
-    Json::StyledWriter styledWriter;
-    std::string s = styledWriter.write(fromScratch);
+    Json::StyledWriter styledWriter; // TODO: non styled
+    std::string s = styledWriter.write(root);
     if(usebase64)
     {
       mg_send_head(nc, 200, s.size(), "Content-Type: application/json");
@@ -13,8 +14,10 @@ void JSONBinBuilder::serialize(struct mg_connection * nc)
     }
     else
     {
+      int firstlinesize = 8+2; // HEX4\xCRLF
+      int sepsize = 3; // CRLF\x00
       // emit size
-      int totsize = size() + s.size() + firstlinesize;
+      int totsize = size() + s.size() + firstlinesize + sepsize;
       mg_send_head(nc, 200, s.size(), "Content-Type: application/jsonbin");
       mg_send(nc, s.c_str(),s.size());
       for(auto & b : blocks)
@@ -36,7 +39,7 @@ void JSONBinBuilder::serialize(struct mg_connection * nc)
 void JSONBinBuilder::serialize(std::ostream & ons)
 {
     Json::StyledWriter styledWriter;
-    std::string s = styledWriter.write(fromScratch);
+    std::string s = styledWriter.write(root);
     if(usebase64)
     {
       ons << s;
@@ -54,7 +57,7 @@ void JSONBinBuilder::serialize(std::ostream & ons)
         }
         else
         {
-          ons.write(b.managed.get(), b.size);
+          ons.write((char*)b.managed.get(), b.size);
         }
       }
     }
@@ -100,14 +103,14 @@ int JSONBinBuilder::assignBinary(Json::Value & value , std::string path, std::st
       int r = currentoff;
       std::ostringstream ons;
       uint32_t size32 = size;
-      ons.write(&size32,4);
+      ons.write((char*)&size32,4); // TODO endianess
 
       uint16_t size16 = path.size();
-      ons.write(&size16,2);
+      ons.write((char*)&size16,2); // TODO endianess
       ons.write(path.c_str(),path.size());
 
       size16 = mime.size();
-      ons.write(&size16,2);
+      ons.write((char*)&size16,2); // TODO endianess
       ons.write(mime.c_str(),mime.size());
 
       BinaryBlock bb;
