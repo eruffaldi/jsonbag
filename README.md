@@ -72,6 +72,14 @@ In HTTP 2.0 there is the possibility of Server Push that is sending additional c
 
 # References
 
+## Normative References
 - JSON Path RFC
 - JSON RFC 
 - HTTP 2.0
+
+And notes: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sending_and_Receiving_Binary_Data
+
+## Binary Manipulation in JS
+
+- https://github.com/jDataView/jDataView
+- https://github.com/jDataView/jBinary
