@@ -12,6 +12,7 @@ void handlejsonbin(struct mg_connection *nc, struct http_message * hm, bool useb
   jb.setInlineMode(usebin);
   {
     // create content
+    
   }
   jb.serialize(nc);
 }
