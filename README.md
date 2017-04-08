@@ -4,13 +4,31 @@ JSON-bag
 An exercise of Web tools for supporting the embedding of Binary data in JSON responses with the following objectives:
 
 - avoid base64 bandwidth and decoding overhead
-- avoid custom encodings such MessagePack that are slow in decoding
-- reduce number of requests or additional production logic (in HTTP 1.1)
+- avoid custom encodings such MessagePack that are slow in browser decoding
+- reduce number of requests or additional production logic (if not using HTTP 2.0 Server Push)
 - can be used also for offline storage
+
+Usage scenario: rich content produced on the fly from an embedded web server.
+
+# Status
+
+## Not Done
+
+- URL split mode in server (client is automatic)
+- emit chunked HTTP (JSON and then blobs)
+- headers for blobs
+- progressive
+- deserialization in C++
 
 # Approach
 
 Create an JSON-bag response the acts much like a multipart MIME with binary data. We would like to have a solution that is human-readable (for the JSON part) and then directly addressable in the browser.
+
+Having found that [https://github.com/KhronosGroup/glTF/tree/master/extensions/Khronos/KHR_binary_glTF](Binary glTF (KHR_binary_glTF)) addresses a similar problem JSON-bag provides a general solution.
+
+Apart the Binary glTF specific domain the differences are:
+- patching of the JSON for supporting resource access
+- readable JSON heading
 
 ## HTTP Transfer
 
@@ -23,14 +41,16 @@ Logical structure:
 - blob2: header + data
 - ...
 
-The headers part in the above structure could be stored in the HTTP headers so that the initial part of the response looks like as JSON. The first header contains only the size in bytes of the JSON part.
+The first header contains only the size in bytes of the JSON part.
 
-Alternative we can put the size in non-binary form as first line (e.g. textual magic + size in hexadecimal followed by crlf).
+The headers part in the above structure could be stored in the HTTP headers so that the initial part of the response looks like as JSON. Alternative we can put the size in non-binary form as first line (e.g. textual magic + size in hexadecimal followed by crlf).
 
 The blob header contains:
 - size
 - content-type
 - JSON path for patching the JSON
+
+As done in Binary glTF we try to enforce alignment of blob content
 
 ## File Serialization
 
@@ -76,6 +96,7 @@ In HTTP 2.0 there is the possibility of Server Push that is sending additional c
 - JSON Path RFC
 - JSON RFC 
 - HTTP 2.0
+- KHR_binary_glTF
 
 And notes: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sending_and_Receiving_Binary_Data
 
