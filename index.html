@@ -1,43 +1,52 @@
 <head>
-<script src="jsonbag.js" >
+<script src="jsonbag.js" type="text/javascript" >
 </script>
-<script src="jsonpath.min.js" >
-</script>
-<script>
+</head>
+<body>
+<script type="text/javascript" > 
+console.log("before")
+
 function xonload()
 {
+	/**
+	 * Function Called
+	 * - msg: contains the JSON (patched if in JSON-bag mode)
+	 * - payloads: contains the payloads if in JSON-bag mode
+	 *
+	 * In this case we create images from the corresponding tags
+	 */
 	function testfx(msg,payloads)
 	{
 		if(msg)
 		{
 			target = document.getElementById("target")
-			for(var i = 0; i < msg.images; i++)
+			for(var i = 0; i < msg.length; i++)
 			{
-				var img = msg.images[i];
+				var img = msg[i];
 				var x = document.createElement("IMG");
+				x.alt = img.name
 				x.src = img.url
 				target.appendChild(x)
 			}
 		}
 	}
 
-	console.log("xonload")
 	var rr = new window.XMLHttpRequest()
-	rr.onload = function(e) {
-		jsonbag_parse(rr,,testfx)
+	rr.onload = function(e) 
+	{
+		// processing and delegation
+		jsonbag_parse(rr,testfx)
 	}
 	rr.open("GET", "/jsonbin");
-	rr.responseType = "arraybuffer";
-	rr.setRequestHeader("Accept","application/jsonbag")
+	// setup
+	jsonbag_prepare(rr)
 	rr.send();
 }
-console.log("setup")
+
 window.addEventListener("load",xonload,false)
 </script>
-</head>
-<body>
 <p>
-Ciao
+Ciao!
 </p>
 <div id="target">
 </div>

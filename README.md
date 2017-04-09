@@ -10,15 +10,21 @@ An exercise of Web tools for supporting the embedding of Binary data in JSON res
 
 Usage scenario: rich content produced on the fly from an embedded web server.
 
-# Status
+# Example
 
-## Not Done
+Offline Example: indexoff.html. In this case the JSON-bag is baked into the HTML and the XHR is simulated. The output shows two images decoded from JSON and embedded. 
 
-- URL split mode in server (client is automatic)
-- emit chunked HTTP (JSON and then blobs)
-- headers for blobs
-- progressive
-- deserialization in C++
+Online Example: build with CMake the web server and run it passing the path of the root, then connect to http://127.0.0.1:8000
+
+	mkdir build
+	cd build
+	cmake ..
+	make
+	./example ..
+
+Online Example interface:
+- /json returns the base64 version
+- /jsonbin returns the JSON-bag
 
 # Approach
 
@@ -44,7 +50,7 @@ Content:
 The header at the beginning tells the length of the JSON part, while the additional BLOB headers contain:
 - size
 - content-type
-- JSON path for patching the JSON
+- JSON pointer for patching the JSON
 
 To simplify the decoding the BLOB header is in JSON prefixed with a 16-bit length
 
@@ -100,7 +106,7 @@ In HTTP 2.0 there is the possibility of Server Push that is sending additional c
 # References
 
 ## Normative References
-- JSON Path RFC
+- JSON Pointer RFC - http://www.rfc-base.org/txt/rfc-6901.txt
 - JSON RFC 
 - HTTP 2.0
 - KHR_binary_glTF
@@ -111,3 +117,18 @@ And notes: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sendi
 
 - https://github.com/jDataView/jDataView
 - https://github.com/jDataView/jBinary
+
+
+# Building Note
+
+Example is with mongoose but it is not strictly necessary
+
+# Status
+
+## Not Implemented
+
+- size limit for data: URI (32k in some browsers)
+- URL split mode in server (client requires no changes)
+- emit chunked HTTP (JSON and then each blob)
+- progressive
+- deserialization in C++
