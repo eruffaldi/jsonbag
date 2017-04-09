@@ -32,7 +32,7 @@ Apart the Binary glTF specific domain the differences are:
 
 ## HTTP Transfer
 
-Logical structure:
+Content:
 
 - header
 - JSON
@@ -41,16 +41,31 @@ Logical structure:
 - blob2: header + data
 - ...
 
-The first header contains only the size in bytes of the JSON part.
-
-The headers part in the above structure could be stored in the HTTP headers so that the initial part of the response looks like as JSON. Alternative we can put the size in non-binary form as first line (e.g. textual magic + size in hexadecimal followed by crlf).
-
-The blob header contains:
+The header at the beginning tells the length of the JSON part, while the additional BLOB headers contain:
 - size
 - content-type
 - JSON path for patching the JSON
 
-As done in Binary glTF we try to enforce alignment of blob content
+To simplify the decoding the BLOB header is in JSON prefixed with a 16-bit length
+
+The first header could be conceived in a way to minimize disruption of content access by legacy services or diagnostics. Three possible approaches have been considered:
+
+1. textual header with magic, size in hexadecimal and crlf. Fixed length or variable
+2. pass the size in the HTTP header
+3. encapsulate the original JSON in a known-size JSON like "[size,original]"
+
+Some comments on the approaches: (1) requires to skip the first line, and then JSON follows, being textual it is easy, (2) can be combined with the previous one, not suitable for file serialization, (3) a reasonable trick.
+
+Note: Binary glTF enforces alignment of the BLOB payload
+
+## URL in JSON
+
+In JSON-bag different URL types are used in the JSON depends the transfer:
+
+- data: the classic base64 embedding, the simplest scenario
+- http: storing the contents in separate URL
+- blob: the new URL type supported by the Blob class and created as a view over the ArrayBuffer
+- refdata: a custom URL that is used to mark the offset, size and mime of an entity wrt the binary part
 
 ## File Serialization
 
@@ -77,14 +92,6 @@ In the split version it patches the JSON with the effective URL, while in the si
 
 Note the server could take the serialized version of JSON-bag and serve it.
 
-## URL in JSON
-
-In JSON-bag different URL types are used in the JSON depends the transfer:
-
-- data: the classic base64 embedding, the simplest scenario
-- http: storing the contents in separate URL
-- blob: the new URL type supported by the Blob class and created as a view over the ArrayBuffer
-- binary: a custom URL that is used to mark the offset, size and mime of an entity wrt the binary part
 
 # HTTP 2.0
 

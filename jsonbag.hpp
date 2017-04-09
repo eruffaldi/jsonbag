@@ -28,6 +28,8 @@ public:
 		std::shared_ptr<const uint8_t> managed; 
 		std::string filename;
 
+		void buildPrefix();
+		std::string buildUrl();
 		bool isFile() const { return filename.size(); }
 		int effectiveSize() const { return size+prefix.size(); }
 	};
@@ -62,9 +64,9 @@ public:
 	/// root element
 	Json::Value root;
 
-private:
 	int size() const { return currentoff; }
-	
+
+private:
 	int currentoff = 0;
 	std::vector<BinaryBlock> blocks;
 	bool usebase64 = false;

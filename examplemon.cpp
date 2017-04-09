@@ -1,5 +1,5 @@
 #include "mongoose.h"
-#include "jsonbin.hpp"
+#include "jsonbag.hpp"
 
 bool contentNegotiation = false;
 static const char *s_http_port = "8000";
@@ -8,11 +8,18 @@ static struct mg_serve_http_opts s_http_server_opts;
 void handlejsonbin(struct mg_connection *nc, struct http_message * hm, bool usebin)
 {
   // produce content here
-  JSONBinBuilder jb;
-  jb.setInlineMode(usebin);
+  JSONBagBuilder jb;
+  jb.setInlineMode(!usebin);
   {
     // create content
-    
+    Json::Value q;
+    q["name"] = "image1";
+    jb.assignFile(q["url"],"$[0].url","image/png","logo.png",false);
+    jb.root[0] = q;
+
+    q["name"] = "image2";
+    jb.assignFile(q["url"],"$[1].url","image/png","logo.png",false);
+    jb.root[1] = q;
   }
   jb.serialize(nc);
 }
