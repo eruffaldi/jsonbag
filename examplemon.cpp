@@ -1,5 +1,6 @@
 #include "mongoose.h"
 #include "jsonbag.hpp"
+#include <fstream>
 
 bool contentNegotiation = false;
 static const char *s_http_port = "8000";
@@ -9,7 +10,8 @@ std::string localfile(const char * name)
 {
   return std::string(s_http_server_opts.document_root ) + '/' + name;
 }
-void handlejsonbin(struct mg_connection *nc, struct http_message * hm, bool usebin)
+
+void handlejsonbin(struct mg_connection *nc, struct http_message * hm, bool usebin, std::string filename = "")
 {
   // produce content here
   JSONBagBuilder jb;
@@ -25,7 +27,15 @@ void handlejsonbin(struct mg_connection *nc, struct http_message * hm, bool useb
     jb.assignFile(q["url"],"/1/url","image/png",localfile("logo.png"),false);
     jb.root[1] = q;
   }
-  jb.serialize(nc);
+  if(filename.empty())
+  {
+    jb.serialize(nc);
+  }
+  else
+  {
+    std::ofstream onf(filename,std::ios::binary);
+    jb.serialize(onf);
+  }
 }
 
 static void ev_handler(struct mg_connection *nc, int ev, void *p) {
@@ -55,6 +65,10 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
     }
     else if(mg_vcmp(&hm->uri,"/json") == 0)
       handlejsonbin(nc,hm,false);
+    else if(mg_vcmp(&hm->uri,"/jsonlocal") == 0)
+      handlejsonbin(nc,hm,false,"output.json");
+    else if(mg_vcmp(&hm->uri,"/jsonbinlocal") == 0)
+      handlejsonbin(nc,hm,true,"output.jsonbag");
     else
       mg_serve_http(nc, hm, s_http_server_opts);
   }

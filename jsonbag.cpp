@@ -1,18 +1,22 @@
 /**
- * JSONBAG
+ * JSONBAG Emanuele Ruffaldi 2017
  */
 #include "jsonbag.hpp"
 #include "base64.h"
 #include <sstream>
 #include <fstream>
+
 #ifdef WITHMONGOOSE
 #include "mongoose.h"
 #else
-// TODO stat without mongoos
+// TODO stat without mongoose
 struct cs_stat_t { int st_size; };
 void mg_stat(const char * c, cs_stat_t * x) {}
 #endif
 
+/**
+ Stream Copy with enforcing of padding
+ */
 template <class F>
 void streamcopyfix(std::istream & inf, int left, F f)
 {
@@ -35,6 +39,9 @@ void streamcopyfix(std::istream & inf, int left, F f)
   }  
 }
 
+/** 
+ * Mongoose Serialization
+ */
 void JSONBagBuilder::serialize(struct mg_connection * nc)
 {
 #ifdef WITHMONGOOSE
@@ -77,7 +84,9 @@ void JSONBagBuilder::serialize(struct mg_connection * nc)
 #endif
 }
 
-// writes to iostream AKA file
+/**
+ * Serialization to file 
+ */
 void JSONBagBuilder::serialize(std::ostream & ons)
 {
     Json::StyledWriter styledWriter;
@@ -88,8 +97,15 @@ void JSONBagBuilder::serialize(std::ostream & ons)
     }
     else
     {
-      // TODO emit size before JSON
-      ons << s;
+      char bufout[128];
+      int firstlinesize = sprintf(bufout,"JBAG00%X\r\n",(int)s.size());
+      int sepsize = 3; // CRLF\x00
+      int totsize = size() + s.size() + firstlinesize + sepsize;
+      char headers[256];
+      ons.write((char*)bufout,firstlinesize);
+      ons.write(s.c_str(),s.size());
+      ons.write("\r\n\x00",sepsize);
+
       for(auto & b : blocks)
       {
         ons << b.prefix;

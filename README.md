@@ -25,6 +25,8 @@ Online Example: build with CMake the web server and run it passing the path of t
 Online Example interface:
 - /json returns the base64 version
 - /jsonbin returns the JSON-bag
+- /jsonlocal saves output.json with base64
+- /jsonbaglocal saves the JSON-bag binary
 
 # Approach
 
