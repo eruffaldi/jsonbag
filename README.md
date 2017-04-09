@@ -38,6 +38,8 @@ Apart the Binary glTF specific domain the differences are:
 - patching of the JSON for supporting resource access
 - readable JSON heading
 
+![Format Diagream](doc/jsonbag.png)
+
 ## HTTP Transfer
 
 Content:
