@@ -12,9 +12,9 @@ Usage scenario: rich content produced on the fly from an embedded web server.
 
 # Example
 
-Offline Example: indexoff.html. In this case the JSON-bag is baked into the HTML and the XHR is simulated. The output shows two images decoded from JSON and embedded. 
+Offline Example without server: [https://eruffaldi.github.io/jsonbag/indexoff.html](indexoff.htm). In this case the JSON-bag is baked into the HTML and the XHR is simulated. The output shows two images decoded from JSON and embedded. It has been tested with Chrome 55, Safari 10.1 and Firefox 52.
 
-Online Example: build with CMake the web server and run it passing the path of the root, then connect to http://127.0.0.1:8000
+Online Example with the server: build with CMake the web server and run it passing the path of the root, then connect to http://127.0.0.1:8000
 
 	mkdir build
 	cd build
@@ -78,6 +78,27 @@ In JSON-bag different URL types are used in the JSON depends the transfer:
 ## File Serialization
 
 The JSON-bag could be stored as a JSON file plus one or more binary files (as glTF 2.0 does) or a single file. In this case the first header has to be stored in the file.
+
+# Current Format
+
+The JSON bag format is the following usign the ABNF notation:
+
+	jsonbag = header JSONcontent separator *blob
+	header = magic version headersize crlf
+	headersize = hex sie
+	magic = "JBAG"
+	version = "0000"
+	separator = crlf \x00
+	blob = blob-header blob-payload
+	blob-header = headersize JSONcontent
+	headersize = uint16-le
+	blob-payload = *uin8
+
+In the JSON expressing the blob header the following is necessary:
+
+- src (string)
+- mime (string)
+- size (integer)
 
 # Browser Side
 
