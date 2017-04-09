@@ -12,7 +12,9 @@ Usage scenario: rich content produced on the fly from an embedded web server.
 
 # Example
 
-Offline Example without server: [https://eruffaldi.github.io/jsonbag/indexoff.html](indexoff.htm). In this case the JSON-bag is baked into the HTML and the XHR is simulated. The output shows two images decoded from JSON and embedded. It has been tested with Chrome 55, Safari 10.1 and Firefox 52.
+Offline Example without server: [https://eruffaldi.github.io/jsonbag/indexoff.html](indexoff.htm). 
+
+In this case the JSON-bag is baked into the HTML and the XHR is simulated. The output shows two images decoded from JSON and embedded. It has been tested with Chrome 55, Safari 10.1 and Firefox 52.
 
 Online Example with the server: build with CMake the web server and run it passing the path of the root, then connect to http://127.0.0.1:8000
 
