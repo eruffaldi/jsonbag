@@ -34,7 +34,7 @@ Online Example interface:
 
 Create an JSON-bag response the acts much like a multipart MIME with binary data. We would like to have a solution that is human-readable (for the JSON part) and then directly addressable in the browser.
 
-Having found that [https://github.com/KhronosGroup/glTF/tree/master/extensions/Khronos/KHR_binary_glTF](Binary glTF KHR_binary_glTF) addresses a similar problem JSON-bag provides a general solution.
+Having found that [Binary glTF as KHR_binary_glTF](https://github.com/KhronosGroup/glTF/tree/master/extensions/Khronos/KHR_binary_glTF) addresses a similar problem JSON-bag provides a general solution.
 
 Apart the Binary glTF specific domain the differences are:
 - patching of the JSON for supporting resource access
