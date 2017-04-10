@@ -46,6 +46,10 @@ public:
 	// reads from iostream for reading back
 	// void deserialize(std::istream & ins);
 
+	int assignBinary(Json::Value & e, std::string path, std::string mime, std::shared_ptr<std::vector<uint8_t> > m);
+
+	int assignBinary(Json::Value & e, std::string path, std::string mime, std::shared_ptr<std::string> m);
+	
 	/**
 	 The std::shared_ptr<const uint8_t> can hold many types of pointers given the fact that we can use the custom deletere
 	 If want to simplify just pass a pointer and let the JSONBagBuilder copy the memory

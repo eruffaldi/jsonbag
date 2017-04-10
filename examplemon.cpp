@@ -25,7 +25,15 @@ void handlejsonbin(struct mg_connection *nc, struct http_message * hm, bool useb
 
     q["name"] = "image2";
     jb.assignFile(q["url"],"/1/url","image/png",localfile("logo.png"),false);
+
+    // example of external element that uses 
+    std::shared_ptr<std::vector<uint8_t> > w(new std::vector<uint8_t>(20));
+    std::fill_n(w->begin(),w->size(),'x');
+    q["name"]["stuff"] = "extra";
+    jb.assignBinary(q["name"]["data"],"","application/binary",w);
+
     jb.root[1] = q;
+
   }
   if(filename.empty())
   {

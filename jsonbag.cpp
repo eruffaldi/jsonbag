@@ -239,3 +239,16 @@ std::string JSONBagBuilder::BinaryBlock::buildUrl()
   onslink << "linkdata:" << mime << ";offset=" << offset<<";size=" << size; // not standard but reasonable
   return onslink.str();
 }
+
+/// the deleter wraps
+int JSONBagBuilder::assignBinary(Json::Value & e, std::string path, std::string mime, std::shared_ptr<std::vector<uint8_t> > m)
+{
+  return assignBinary(e,path,mime,std::shared_ptr<const uint8_t>(m->data(),[m] (const uint8_t *p) mutable { }),m->size());
+}
+
+
+/// the deleter wraps
+int JSONBagBuilder::assignBinary(Json::Value & e, std::string path, std::string mime, std::shared_ptr<std::string > m)
+{
+  return assignBinary(e,path,mime,std::shared_ptr<const uint8_t>((const uint8_t*)m->c_str(),[m] (const uint8_t *p) mutable { }),m->size());
+}

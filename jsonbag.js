@@ -11,6 +11,23 @@ function jsonbag_prepare(xhr)
 	xhr.setRequestHeader("Accept","application/jsonbag")
 }
 
+// linkdata:image/png;offset=20345;size=20241
+function jsonbag_linkdataparse(u)
+{
+	var a = u.split(";")
+	var r = {}
+	// TODO check linkdata: prefix
+	r.mime = a[0].substr(9)
+	for(var i = 1; i < a.length; i++)
+	{
+		var b = u.split("=");
+		if(b.length == 2)
+			r[b[0]] = b[1]
+		else
+			r[b[0]] = ""
+	}
+	return r
+}
 
 // debugging 
 function jsonbag_uint8array2buffer(a)
