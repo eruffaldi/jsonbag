@@ -12,7 +12,9 @@ Usage scenario: rich content produced on the fly from an embedded web server.
 
 # Example
 
-Offline Example without server: [https://eruffaldi.github.io/jsonbag/indexoff.html](indexoff.htm). In this case the JSON-bag is baked into the HTML and the XHR is simulated. The output shows two images decoded from JSON and embedded. It has been tested with Chrome 55, Safari 10.1 and Firefox 52.
+Offline Example without server: (https://eruffaldi.github.io/jsonbag/indexoff.html)[https://eruffaldi.github.io/jsonbag/indexoff.html]. 
+
+In this case the JSON-bag is baked into the HTML and the XHR is simulated. The output shows two images decoded from JSON and embedded. It has been tested with Chrome 55, Safari 10.1 and Firefox 52.
 
 Online Example with the server: build with CMake the web server and run it passing the path of the root, then connect to http://127.0.0.1:8000
 
@@ -32,7 +34,7 @@ Online Example interface:
 
 Create an JSON-bag response the acts much like a multipart MIME with binary data. We would like to have a solution that is human-readable (for the JSON part) and then directly addressable in the browser.
 
-Having found that [https://github.com/KhronosGroup/glTF/tree/master/extensions/Khronos/KHR_binary_glTF](Binary glTF (KHR_binary_glTF)) addresses a similar problem JSON-bag provides a general solution.
+Having found that [Binary glTF as KHR_binary_glTF](https://github.com/KhronosGroup/glTF/tree/master/extensions/Khronos/KHR_binary_glTF) addresses a similar problem JSON-bag provides a general solution.
 
 Apart the Binary glTF specific domain the differences are:
 - patching of the JSON for supporting resource access
@@ -148,12 +150,13 @@ And notes: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sendi
 
 Example is with mongoose but it is not strictly necessary
 
-# Status
+# Ideas
 
-## Not Implemented
 
 - size limit for data: URI (32k in some browsers)
 - URL split mode in server (client requires no changes)
 - emit chunked HTTP (JSON and then each blob)
 - progressive
 - deserialization in C++
+
+See also the Issue Tracker
