@@ -1,0 +1,25 @@
+{
+  "name": "jsonbag",
+  "version": "1.0.0",
+  "description": "initial jsonbag example",
+  "main": "examplenode.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eruffaldi/jsonbag.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eruffaldi/jsonbag/issues"
+  },
+  "homepage": "https://github.com/eruffaldi/jsonbag#readme",
+  "dependencies": {
+    "express": "^4.15.2"
+  }
+}
