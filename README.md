@@ -150,12 +150,13 @@ And notes: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sendi
 
 Example is with mongoose but it is not strictly necessary
 
-# Status
+# Ideas
 
-## Not Implemented
 
 - size limit for data: URI (32k in some browsers)
 - URL split mode in server (client requires no changes)
 - emit chunked HTTP (JSON and then each blob)
 - progressive
 - deserialization in C++
+
+See also the Issue Tracker
