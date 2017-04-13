@@ -1,6 +1,6 @@
 //npm install express --save
 const express = require('express')  
-const jsonbag = require('jsonbag_server')
+const jsonbag = require('jsonbag_serverside')
 const app = express()  
 const port = 8000
 
@@ -8,14 +8,14 @@ const port = 8000
 
 function makejsonbag(request,response,usebin,tofile)
 {
-  var jb = new JSONBagBuilder()
+  var jb = new jsonbag.JSONBagBuilder()
   jb.setInlineMode(!usebin)
   {
     var r = [];
     r.push({name: "image1", url: ""})
-    jb.assignFile(r[0],"url","/0/url","image/png","logo.png")
+    jb.assignFile(r[0],"url","/0/url","image/png","logo.png",false)
     r.push({name: "image2", url: ""})
-    jb.assignFile(r[1],"url","/1/url","image/png","logo.png")
+    jb.assignFile(r[1],"url","/1/url","image/png","logo.png",false)
   }
   if(!tofile)
   {
