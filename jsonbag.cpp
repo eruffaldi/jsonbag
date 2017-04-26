@@ -47,10 +47,39 @@ void JSONBagBuilder::serialize(struct mg_connection * nc)
 #ifdef WITHMONGOOSE
     Json::StyledWriter styledWriter; // TODO: non styled
     std::string s = styledWriter.write(root);
-    if(usebase64)
+    if(isInline())
     {
       mg_send_head(nc, 200, s.size(), "Content-Type: application/json");
       mg_send(nc, s.c_str(),s.size());
+    }
+    else if(isBag())
+    {
+      char bufout[128];
+      int firstlinesize = sprintf(bufout,"JBAG00%X\r\n",(int)s.size());
+      int sepsize = 3; // CRLF\x00
+      int totsize = size() + s.size() + firstlinesize + sepsize;
+      char headers[256];
+      sprintf(headers, "Content-Type: application/jsonbag\r\nJSONBag-Range: %d %d",firstlinesize,(int)s.size());
+      mg_send_head(nc, 200, totsize, headers);
+      mg_send(nc, bufout,firstlinesize);
+      mg_send(nc, s.c_str(),s.size());
+      // separator
+      mg_send(nc, "\r\n\x00",sepsize);
+      // body
+      for(auto & b : blocks)
+      {
+        mg_send(nc, b.prefix.c_str(),b.prefix.size());
+        if(b.isFile())
+        {
+          // NOTE: under Linux mongoose should expose sendfile
+          std::ifstream inf(b.filename,std::ios::binary);
+          streamcopyfix(inf,b.size,[nc] (uint8_t*p,int n) {     mg_send(nc,p,n); });
+        }
+        else
+        {
+          mg_send(nc, b.managed.get(), b.size);
+        }
+      }
     }
     else
     {
@@ -80,7 +109,7 @@ void JSONBagBuilder::serialize(struct mg_connection * nc)
           mg_send(nc, b.managed.get(), b.size);
         }
       }
-    }
+    }    
 #endif
 }
 
@@ -91,11 +120,11 @@ void JSONBagBuilder::serialize(std::ostream & ons)
 {
     Json::StyledWriter styledWriter;
     std::string s = styledWriter.write(root);
-    if(usebase64)
+    if(isInline())
     {
       ons << s;
     }
-    else
+    else if(isBag())
     {
       char bufout[128];
       int firstlinesize = sprintf(bufout,"JBAG00%X\r\n",(int)s.size());
@@ -120,11 +149,36 @@ void JSONBagBuilder::serialize(std::ostream & ons)
         }
       }
     }
+    else 
+    {
+      char bufout[128];
+      int firstlinesize = sprintf(bufout,"JBAG00%X\r\n",(int)s.size());
+      int sepsize = 3; // CRLF\x00
+      int totsize = size() + s.size() + firstlinesize + sepsize;
+      char headers[256];
+      ons.write((char*)bufout,firstlinesize);
+      ons.write(s.c_str(),s.size());
+      ons.write("\r\n\x00",sepsize);
+
+      for(auto & b : blocks)
+      {
+        ons << b.prefix;
+        if(b.isFile())
+        {
+          std::ifstream inf(b.filename,std::ios::binary);
+          streamcopyfix(inf,b.size,[&ons] (uint8_t*p,int n) {     ons.write((char*)p,n); });
+        }
+        else
+        {
+          ons.write((char*)b.managed.get(), b.size);
+        }
+      }
+    }    
 }
 
 int JSONBagBuilder::assignFile(Json::Value & e , std::string path, std::string mime, std::string filename, bool deferload)
 {
-  if(usebase64)
+  if(isInline())
   {
 
     // OPTIONAL: if mongoos is present we could use mg_base64_encode
@@ -192,7 +246,7 @@ int JSONBagBuilder::assignFile(Json::Value & e , std::string path, std::string m
 
 int JSONBagBuilder::assignBinary(Json::Value & value , std::string path, std::string mime, std::shared_ptr<const uint8_t> m , int size)
 {
-  if(usebase64)
+  if(isInline())
   {
       // OPTIONAL: if mongoos is present we could use mg_base64_encode
       value = "data:" + mime +  ";base64," + base64_encode(m.get(),size);

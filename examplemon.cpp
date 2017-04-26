@@ -11,11 +11,11 @@ std::string localfile(const char * name)
   return std::string(s_http_server_opts.document_root ) + '/' + name;
 }
 
-void handlejsonbin(struct mg_connection *nc, struct http_message * hm, bool usebin, std::string filename = "")
+void handlejsonbin(struct mg_connection *nc, struct http_message * hm, bool usebin, bool usemp, std::string filename = "")
 {
   // produce content here
   JSONBagBuilder jb;
-  jb.setInlineMode(!usebin);
+  jb.setMode(usemp ? JSONBagBuilder::Mode::Multipart : usebin ? JSONBagBuilder::Mode::Bag : JSONBagBuilder::Mode::Base64);
   {
     // create content
     Json::Value q;
@@ -52,9 +52,11 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
     if(mg_vcmp(&hm->uri,"/jsonbin") == 0)
     {
       bool dobin = true;
+      bool domultipart = false;
       if(contentNegotiation)
       {
         dobin = false;
+        domultipart = false;
         for(int i = 0; i < MG_MAX_HTTP_HEADERS; i++)
         {
           if(hm->header_names[i].len == 0)
@@ -64,19 +66,28 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
             if(mg_vcmp(&hm->header_values[i],"application/jsonbag") == 0)
             {
               dobin = true;
-              break;
+            }
+            else if(mg_vcmp(&hm->header_values[i],"multipart/related") == 0)
+            {
+              domultipart = true;
             }
           }
         }
       }
-      handlejsonbin(nc,hm,dobin);
+      handlejsonbin(nc,hm,dobin,domultipart);
     }
     else if(mg_vcmp(&hm->uri,"/json") == 0)
-      handlejsonbin(nc,hm,false);
+      handlejsonbin(nc,hm,false,false);
+    else if(mg_vcmp(&hm->uri,"/jsonbag") == 0)
+      handlejsonbin(nc,hm,true,false);
+    else if(mg_vcmp(&hm->uri,"/jsonmp") == 0)
+      handlejsonbin(nc,hm,false,true);
     else if(mg_vcmp(&hm->uri,"/jsonlocal") == 0)
-      handlejsonbin(nc,hm,false,"output.json");
-    else if(mg_vcmp(&hm->uri,"/jsonbinlocal") == 0)
-      handlejsonbin(nc,hm,true,"output.jsonbag");
+      handlejsonbin(nc,hm,false,false,"output.json");
+    else if(mg_vcmp(&hm->uri,"/jsonbaglocal") == 0)
+      handlejsonbin(nc,hm,true,false,"output.jsonbag");
+    else if(mg_vcmp(&hm->uri,"/jsonmplocal") == 0)
+      handlejsonbin(nc,hm,false,true,"output.http");
     else
       mg_serve_http(nc, hm, s_http_server_opts);
   }

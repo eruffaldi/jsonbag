@@ -18,6 +18,13 @@ struct mg_connection;
 class JSONBagBuilder
 {
 public:
+	enum class Mode { Base64, Bag, Multipart };
+
+	bool isInline() const { return mode == Mode::Base64; }
+	bool isBag() const { return mode == Mode::Bag; }
+
+	Mode mode = Mode::Base64;
+
 	struct BinaryBlock
 	{
 		int size;
@@ -35,7 +42,7 @@ public:
 	};
 
 	// TODO: add the external mode
-	void setInlineMode(bool b) { usebase64 = b; } 
+	void setMode(Mode m) { mode = m; }
 
 	// TODO: optiion for sending out chunked data (e.g. per-blob, depending on size)
 	void serialize(struct mg_connection * nc);

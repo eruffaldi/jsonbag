@@ -5,10 +5,17 @@
  */
 
 // adjustes the XHR to support JSONbag
-function jsonbag_prepare(xhr)
+function jsonbag_prepare(xhr,multipart)
 {
 	xhr.responseType = "arraybuffer";
-	xhr.setRequestHeader("Accept","application/jsonbag")
+	if(multipart)
+	{
+		xhr.setRequestHeader("Accept","multipart/related")
+	}
+	else
+	{
+		xhr.setRequestHeader("Accept","application/jsonbag")
+	}
 }
 
 // linkdata:image/png;offset=20345;size=20241
