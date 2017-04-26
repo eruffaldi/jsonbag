@@ -65,40 +65,42 @@ function jsonbag_hex2buffer(hex)
 function jsonbag_parse(xhr,fx)
 {
 	var r = xhr.response; 
-    var joffset = 0;
-    var jlength = r.byteLength;
+	var ct = xhr.getResponseHeader("Content-Type").split(";")[0]
 
-	// "JBAG0000" + "HEXLENGTH"" + "\r\n""
-	// maxlength is 8+2+8
-	var r2 = new Uint16Array(r,0,18)
-	if(r2[0] == 0x424a && r2[1] == 0x4741) // JBAG
+    if(ct == "application/jsonbag")
 	{
-		if(r2[2] != 0x3030) // 0000
+	    var joffset = 0;
+	    var jlength = r.byteLength;
+
+		// "JBAG0000" + "HEXLENGTH"" + "\r\n""
+		// maxlength is 8+2+8
+		var r2 = new Uint16Array(r,0,18)
+		if(r2[0] == 0x424a && r2[1] == 0x4741) // JBAG
 		{
-			console.log("unknown version ",r2[2].toString(16))
-			return
-		}
-		else
-		{
-			var sizehex = 0;
-			for(var i = 3; i < 10 && r2[i] != 0xa0d; i++)
+			if(r2[2] != 0x3030) // 0000
 			{
-				// r4[i] contains the 16bit of the two characters
-				// quick and dirty HEX
-				var j = r2[i]
-				var lo = j >> 8;
-				var hi = j & 0xFF;	
-				lo = (lo > 57 ? lo-65+10:lo-48);
-				hi = (hi > 57 ? hi-65+10:hi-48)*16;
-				sizehex = (sizehex << 8 ) + lo + hi;
+				console.log("unknown version ",r2[2].toString(16))
+				return
 			}
-			joffset = 2*(i+1);
-			jlength = sizehex;
+			else
+			{
+				var sizehex = 0;
+				for(var i = 3; i < 10 && r2[i] != 0xa0d; i++)
+				{
+					// r4[i] contains the 16bit of the two characters
+					// quick and dirty HEX
+					var j = r2[i]
+					var lo = j >> 8;
+					var hi = j & 0xFF;	
+					lo = (lo > 57 ? lo-65+10:lo-48);
+					hi = (hi > 57 ? hi-65+10:hi-48)*16;
+					sizehex = (sizehex << 8 ) + lo + hi;
+				}
+				joffset = 2*(i+1);
+				jlength = sizehex;
+			}
 		}
-	}
 
-    if(xhr.getResponseHeader("Content-Type") == "application/jsonbag")
-	{
 		var h = xhr.getResponseHeader("JSONBag-Range")
 	    if(h)
 	    {
@@ -108,11 +110,8 @@ function jsonbag_parse(xhr,fx)
 	    	joffset = f;
 	    	jlength = s;
 	    }
-	}
-    console.log("jsonbag_parse found offset/length: ",joffset,jlength)
+	    console.log("jsonbag_parse found offset/length: ",joffset,jlength)
 
-    if(jlength > 0)
-    {
 		var dataView = new DataView(r,joffset,jlength); 				
 		var decoder = new TextDecoder("utf-8");
 		var decodedString = decoder.decode(dataView);	 
@@ -146,9 +145,19 @@ function jsonbag_parse(xhr,fx)
 		}
 		fx(j,payloads)
 	}
+    else if(ct == "multipart/related")
+    {
+    	// use ct ; boundary or the first line
+    	// first line is the --separator (javascript clears ;boundary="abc123")
+    	// Content-Transfer-Encoding
+    	
+    	// each Block
+    	// 	separator
+    	// 	headers
+    	//	content
+    }
 	else
 	{
-		testfx()	
 	}
 }
 

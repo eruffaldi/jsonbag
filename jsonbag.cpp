@@ -83,6 +83,20 @@ void JSONBagBuilder::serialize(struct mg_connection * nc)
     }
     else
     {
+      /**
+Content-Length: 538
+Content-Type: multipart/related; boundary="e89b3e29388aef23453450d10e5aaed0"
+
+
+--e89b3e29388aef23453450d10e5aaed0
+Content-Type: application/json
+
+--e89b3e29388aef23453450d10e5aaed0
+Content-Disposition: attachment; filename="recipe.txt"
+Content-Type: text/plain
+Content-Length: 86
+
+       */
       char bufout[128];
       int firstlinesize = sprintf(bufout,"JBAG00%X\r\n",(int)s.size());
       int sepsize = 3; // CRLF\x00
@@ -305,4 +319,18 @@ int JSONBagBuilder::assignBinary(Json::Value & e, std::string path, std::string 
 int JSONBagBuilder::assignBinary(Json::Value & e, std::string path, std::string mime, std::shared_ptr<std::string > m)
 {
   return assignBinary(e,path,mime,std::shared_ptr<const uint8_t>((const uint8_t*)m->c_str(),[m] (const uint8_t *p) mutable { }),m->size());
+}
+
+void rawmultipart(struct mg_connection * nc, const char * filename)
+{
+  cs_stat_t ss;
+  ss.st_size = 0;
+  mg_stat(filename,&ss);
+
+  char headers[256];
+  sprintf(headers, "Content-Type: multipart/related");
+  mg_send_head(nc, 200, ss.st_size, headers);
+
+  std::ifstream inf(filename,std::ios::binary);
+  streamcopyfix(inf,ss.st_size,[nc] (uint8_t*p,int n) {     mg_send(nc,p,n); });
 }

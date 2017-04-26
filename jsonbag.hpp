@@ -83,4 +83,6 @@ private:
 	bool usebase64 = false;
 };
 
+void rawmultipart(struct mg_connection * nc, const char * filename);
+
 // TODO wrappers to : std::shared_ptr<const uint8_t>

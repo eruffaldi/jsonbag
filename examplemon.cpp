@@ -49,7 +49,7 @@ void handlejsonbin(struct mg_connection *nc, struct http_message * hm, bool useb
 static void ev_handler(struct mg_connection *nc, int ev, void *p) {
   struct http_message * hm = (struct http_message *) p;
   if (ev == MG_EV_HTTP_REQUEST) {
-    if(mg_vcmp(&hm->uri,"/jsonbin") == 0)
+    if(mg_vcmp(&hm->uri,"/jsonauto") == 0)
     {
       bool dobin = true;
       bool domultipart = false;
@@ -74,14 +74,23 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
           }
         }
       }
-      handlejsonbin(nc,hm,dobin,domultipart);
+      if(domultipart)
+        rawmultipart(nc,"example.http");
+      else
+      {
+        handlejsonbin(nc,hm,dobin,domultipart);
+      }
     }
     else if(mg_vcmp(&hm->uri,"/json") == 0)
       handlejsonbin(nc,hm,false,false);
     else if(mg_vcmp(&hm->uri,"/jsonbag") == 0)
       handlejsonbin(nc,hm,true,false);
     else if(mg_vcmp(&hm->uri,"/jsonmp") == 0)
-      handlejsonbin(nc,hm,false,true);
+    {
+      
+        rawmultipart(nc,"example.http");
+      //handlejsonbin(nc,hm,false,true);
+    }
     else if(mg_vcmp(&hm->uri,"/jsonlocal") == 0)
       handlejsonbin(nc,hm,false,false,"output.json");
     else if(mg_vcmp(&hm->uri,"/jsonbaglocal") == 0)
